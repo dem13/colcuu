@@ -17,7 +17,7 @@ let maxGeneratingInterval = 1000;
 
 class Basket extends EngineObject {
     constructor() {
-        super(vec2(0, 0), vec2(3, 4));
+        super(vec2(0, 0), vec2(4, 4), tile(0, vec2(32)));
         this.setCollision();
         this.mass = 0;
     }
@@ -31,8 +31,8 @@ class Basket extends EngineObject {
 class FallItem extends EngineObject {
     constructor(harmfull, pos) {
         pos = pos || vec2(randInt(-levelSize.x / 2, levelSize.x / 2), levelSize.y / 2 + fallItemSize.x);
-        super(pos, fallItemSize);
-        this.color = harmfull ? new Color(1, 0, 0) : new Color(0, 1, 0);
+        super(pos, fallItemSize, tile(harmfull ? 1 : 2, vec2(32, 32)));
+        // this.color = harmfull ? new Color(1, 0, 0) : new Color(0, 1, 0);
         this.velocity = fallingVelocity;
         this.setCollision();
         this.harmfull = harmfull;
@@ -40,17 +40,34 @@ class FallItem extends EngineObject {
 
     collideWithObject(o) {
         if (o instanceof Basket) {
-            const color = this.color;
+            const color = new Color(0, 0, 0.5);
+            
             new ParticleEmitter(
-                this.pos, 0,            // pos, angle
-                this.size, .1, 200, PI, // emitSize, emitTime, emitRate, emiteCone
-                0,                      // tileInfo
-                color, color,           // colorStartA, colorStartB
-                color.scale(1,0), color.scale(1,0), // colorEndA, colorEndB
-                .2, .5, 1, .1, .1,  // time, sizeStart, sizeEnd, speed, angleSpeed
-                .99, .95, .4, PI,   // damping, angleDamping, gravityScale, cone
-                .1, .5, 0, 1        // fadeRate, randomness, collide, additive
-            );
+                this.pos, 0,	//position, angle
+                0,	// emitSize
+                0.25,	// emitTime
+                200,	// emitRate
+                3.14,	// emitConeAngle
+                0,	// tileIndex
+                new Color(0, 0.933, 1, 1),	// colorStartA
+                new Color(0.259, 0.816, 1, 1),	// colorStartB
+                new Color(0, 0.165, 0.98, 0.5),	// colorEndA
+                new Color(0, 0.031, 1, 0.5),	// colorEndB
+                0.5,	// particleTime
+                0.1,	// sizeStart
+                1,	// sizeEnd
+                0.1,	// speed
+                0.05,	// angleSpeed
+                1,	// damping
+                1,	// angleDamping
+                1,	// gravityScale
+                3.14,	// particleConeAngle
+                0.1,	// fadeRate
+                0.5,	// randomness
+                0,	// collideTiles
+                0,	// additive
+                1,	// randomColorLinear
+            ); // particle emitter
             
             if (this.harmfull) {
                 alert("You're dead!");
