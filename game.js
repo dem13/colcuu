@@ -14,6 +14,7 @@ const fallItemSize = vec2(2.5, 2.5);
 let fallingVelocity = vec2(0, -0.5);
 let score = 0;
 let maxGeneratingInterval = 1000;
+let gameOver = false;
 
 class Basket extends EngineObject {
     constructor() {
@@ -70,13 +71,12 @@ class FallItem extends EngineObject {
             ); // particle emitter
             
             if (this.harmfull) {
-                alert("You're dead!");
-                window.location.reload();
+                gameOver = true;
             } else {
                 score++;
+                this.destroy();
             }
         }
-        this.destroy();
     }
 
     update() {
@@ -145,6 +145,9 @@ function gameRender()
     // draw any background effects that appear behind objects
     drawRect(vec2(0, 0), levelSize, BACKGROUND_COLOR);
     drawText(`Score: ${score}`, vec2(-levelSize.x / 2 + 6, levelSize.y / 2 - 4), 3);
+    if (gameOver) {
+        drawText("Game Over!", cameraPos.scale(.5), 5, new Color(0, 0, 0));
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,6 +155,9 @@ function gameRenderPost()
 {
     // called after objects are rendered
     // draw effects or hud that appear above all objects
+    if (gameOver) {
+        setPaused(true);
+    }   
 }
 
 ///////////////////////////////////////////////////////////////////////////////
