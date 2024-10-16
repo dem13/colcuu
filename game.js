@@ -13,8 +13,17 @@ const levelSize = screenSize.scale(1 / cameraScale);
 const fallItemSize = vec2(2.5, 2.5);
 let fallingVelocity = vec2(0, -0.5);
 let score = 0;
-let maxGeneratingInterval = 1000;
+let generatingInterval = 1000;
 let gameOver = false;
+
+const welcomeField = [
+    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0],
+    [0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+];
+
 
 class Basket extends EngineObject {
     constructor() {
@@ -33,10 +42,10 @@ class FallItem extends EngineObject {
     constructor(harmfull, pos) {
         pos = pos || vec2(randInt(-levelSize.x / 2, levelSize.x / 2), levelSize.y / 2 + fallItemSize.x);
         super(pos, fallItemSize, tile(harmfull ? 1 : 2, vec2(32, 32)));
-        // this.color = harmfull ? new Color(1, 0, 0) : new Color(0, 1, 0);
         this.velocity = fallingVelocity;
         this.setCollision();
         this.harmfull = harmfull;
+        this.mas = 0;
     }
 
     collideWithObject(o) {
@@ -88,15 +97,33 @@ class FallItem extends EngineObject {
 }
 
 function barage() {
+
+
     for(let i = -levelSize.x / 2; i < levelSize.x / 2; i+= fallItemSize.x + 0.5) {
         new FallItem(true, vec2(i, levelSize.y / 2 + fallItemSize.x));
     }
 }
 
+function drawFallItemField(field, harmfull = false) {
+    const baseY = levelSize.y / 2 + fallItemSize.x + field.length * fallItemSize.y;
+    const baseX = -levelSize.x / 2 + 1;
+    for (let y = 0; y < field.length; y++) {
+        for (let x = 0; x < field[y].length; x++) {
+            if (field[y][x]) {
+                new FallItem(harmfull, vec2(baseX + x * fallItemSize.x, baseY - fallItemSize.y * y ));
+            }
+        }
+    }
+}
+
 function generateFallItem() {
     new FallItem(randInt(0, 2)), randInt(0, 250)
-    maxGeneratingInterval-= 10;
-    return setTimeout(generateFallItem, randInt(0, maxGeneratingInterval));
+
+    if (generatingInterval >= 300) {
+        generatingInterval-= 10;
+    }
+    
+    !gameOver && setTimeout(generateFallItem, randInt(0, generatingInterval));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,46 +132,32 @@ function gameInit()
     setObjectMaxSpeed(10);
     setCanvasFixedSize(screenSize);
     new Basket;
-    // setInterval(() => {
-    //     const itemsAmount = randInt(0, 3);
-    //     for(let i = 0; i < itemsAmount; i++) {
-           
-    //        setTimeout(() => new FallItem(randInt(0, 2)), randInt(0, 250)); 
-    //     }
-    //     fallingVelocity = fallingVelocity.add(vec2(0, -0.01));
-    //     console.log(fallingVelocity.y);
-    // }, 500);
-
-    generateFallItem();
 
     if(window.location.hash == '#ryan') {
-        setTimeout(() => barage(), 4500);
+        setTimeout(() => barage(), 10000);
+    } else {
+        setTimeout(() => drawFallItemField(welcomeField), 500);
     }
-    // called once after the engine starts up
-    // setup the game
+    
+    setTimeout(() => generateFallItem(), 2000);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 function gameUpdate()
 {
-    // called every frame at 60 frames per second
-    // handle input and update the game state
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 function gameUpdatePost()
 {
-    // called after physics and objects are updated
-    // setup camera and prepare for render
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 function gameRender()
 {
-    // called before objects are rendered
-    // draw any background effects that appear behind objects
     drawRect(vec2(0, 0), levelSize, BACKGROUND_COLOR);
-    drawText(`Score: ${score}`, vec2(-levelSize.x / 2 + 6, levelSize.y / 2 - 4), 3);
+    drawText(`Score: ${score}`, vec2(-levelSize.x / 2 + 7, levelSize.y / 2 - 4), 3);
     if (gameOver) {
         drawText("Game Over!", cameraPos.scale(.5), 5, new Color(0, 0, 0));
     }
@@ -153,8 +166,6 @@ function gameRender()
 ///////////////////////////////////////////////////////////////////////////////
 function gameRenderPost()
 {
-    // called after objects are rendered
-    // draw effects or hud that appear above all objects
     if (gameOver) {
         setPaused(true);
     }   
